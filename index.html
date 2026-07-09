@@ -18,6 +18,13 @@
     --ok: #16A34A; --ok-bg: #EAF7EE; --pending-bg: #F4F1EA; --pending-text: #92795A;
     --radius: 12px;
   }
+  body.dark{
+    --sidebar-bg: #111827; --sidebar-text: #D1D5DB; --sidebar-active: #1F2937;
+    --accent: #60A5FA; --accent-dark: #93C5FD;
+    --bg: #0F172A; --card-bg: #111827; --border: #334155;
+    --text: #E2E8F0; --muted: #94A3B8;
+    --ok: #34D399; --ok-bg: #0F766E; --pending-bg: #1E293B; --pending-text: #CBD5E1;
+  }
   *{ box-sizing:border-box; }
   body{ margin:0; background: var(--bg); color: var(--text); font-family:'Inter', system-ui, sans-serif; -webkit-font-smoothing:antialiased; }
   .mono{ font-family:'IBM Plex Mono', monospace; }
@@ -28,7 +35,7 @@
   .topbar{ display:none; align-items:center; justify-content:space-between; background: var(--sidebar-bg); color:#fff; padding:14px 18px; }
   .topbar button{ background:transparent; border:1px solid rgba(255,255,255,0.25); color:#fff; border-radius:8px; padding:6px 10px; font-size:13px; cursor:pointer; }
 
-  .sidebar{ width: 300px; flex-shrink:0; background: var(--sidebar-bg); color: var(--sidebar-text); padding: 26px 16px; height:100vh; position:sticky; top:0; overflow-y:auto; }
+  .sidebar{ width: 300px; flex-shrink:0; background: var(--sidebar-bg); color: var(--sidebar-text); padding: 26px 16px; height:100vh; position:sticky; top:0; overflow-y:auto; display:flex; flex-direction:column; justify-content:space-between; }
   .sidebar-title{ color:#fff; font-weight:700; font-size:16px; padding: 0 10px 4px; }
   .sidebar-sub{ font-size:12px; color:#7C8399; padding: 0 10px 16px; }
   .dept-btn{ width:100%; display:flex; align-items:center; justify-content:space-between; gap:8px; background:transparent; border:none; color: var(--sidebar-text); text-align:left; padding: 11px 10px; border-radius:8px; cursor:pointer; font-size:13.5px; margin-bottom:2px; transition: background .15s, color .15s; }
@@ -83,6 +90,19 @@
   .section-toolbar{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:16px; flex-wrap:wrap; }
   .btn-outline{ background: var(--card-bg); border:1px solid var(--border); color: var(--text); padding: 9px 14px; border-radius:8px; font-size:13px; cursor:pointer; font-weight:500; display:inline-flex; align-items:center; gap:7px; }
   .btn-outline:hover{ border-color: var(--accent); color: var(--accent-dark); }
+  .settings-panel{ display:grid; gap:18px; }
+  .settings-section{ background: var(--card-bg); border:1px solid var(--border); border-radius:16px; padding:20px; }
+  .settings-section h2{ margin:0 0 10px; font-size:17px; }
+  .settings-section p{ margin:0 0 16px; color: var(--muted); font-size:14px; }
+  .settings-actions{ display:flex; flex-wrap:wrap; gap:12px; }
+  .settings-row{ display:grid; gap:10px; margin-top:18px; }
+  .settings-card{ background: var(--bg); border:1px solid var(--border); border-radius:14px; padding:16px; }
+  .settings-card h3{ margin:0 0 10px; font-size:15px; }
+  .settings-card p{ margin:0; font-size:13px; color: var(--muted); }
+  .list-table{ width:100%; border-collapse:collapse; }
+  .list-table td{ padding:10px 8px; border-bottom:1px solid var(--border); vertical-align:middle; font-size:13px; }
+  .list-table td:last-child{ text-align:right; }
+  .list-badge{ display:inline-flex; align-items:center; gap:6px; padding:4px 8px; border-radius:999px; background: rgba(59,130,246,0.12); color: var(--accent-dark); font-size:12px; }
 
   .qr-section{ display:flex; align-items:center; gap:18px; margin-top:20px; padding-top:20px; border-top:1px solid var(--border); flex-wrap:wrap; }
   .qr-code{ width:120px; height:120px; flex-shrink:0; background:#fff; padding:6px; border-radius:8px; border:1px solid var(--border); }
@@ -94,45 +114,112 @@
   .qr-buttons button{ background: var(--accent); color:#fff; border:none; padding: 8px 14px; border-radius:7px; font-size:12.5px; font-weight:600; cursor:pointer; }
   .qr-buttons button.secondary{ background: var(--bg); color: var(--text); border:1px solid var(--border); }
 
-  .sidebar-admin{ padding: 0 10px 18px; }
-  .admin-btn{ width:100%; background: var(--accent); color:#fff; border:none; padding:9px 10px; border-radius:8px; font-size:12.5px; cursor:pointer; text-align:center; font-weight:600; }
+  .sidebar-admin{ padding: 0 10px 18px; display:flex; flex-direction:column; gap:10px; }
+  .sidebar-footer{ padding: 14px 10px 20px; border-top:1px solid rgba(255,255,255,0.08); display:flex; flex-direction:column; gap:10px; margin-top:auto; }
+  .admin-btn{ width:100%; background: var(--accent); color:#fff; border:none; padding:11px 12px; border-radius:10px; font-size:13px; cursor:pointer; text-align:center; font-weight:600; }
   .admin-btn.ghost{ background: rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); }
-  .admin-badge{ display:flex; align-items:center; gap:6px; font-size:11.5px; color:#8CE0A8; margin-bottom:8px; word-break:break-all; }
+  .admin-badge{ display:flex; align-items:center; gap:8px; font-size:12px; color:#8CE0A8; margin-bottom:8px; word-break:break-all; }
   .admin-badge .dot{ width:6px; height:6px; border-radius:50%; background:#8CE0A8; flex-shrink:0; }
 
   .auth-gate{ position:fixed; inset:0; background: var(--bg); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; padding:24px; z-index: 200; }
   .auth-gate.hidden{ display:none; }
   .auth-footer{ font-size:11.5px; color: var(--muted); text-align:center; }
   .auth-split{
-    display:grid; grid-template-columns: 1fr 1fr; max-width: 780px; width:100%;
-    background: var(--card-bg); border-radius:16px; overflow:hidden;
-    box-shadow: 0 30px 70px -30px rgba(20,25,40,0.35); border:1px solid var(--border);
+    display:grid; grid-template-columns: 1fr 1.05fr; max-width: 840px; width:100%;
+    background: var(--card-bg); border-radius:20px; overflow:hidden;
+    box-shadow: 0 32px 80px -34px rgba(20,25,40,0.18); border:1px solid var(--border);
   }
   .auth-brand{
-    background: var(--sidebar-bg); color: var(--sidebar-text); padding: 44px 38px;
-    display:flex; flex-direction:column; justify-content:center; gap:14px;
+    position:relative;
+    overflow:hidden;
+    background: linear-gradient(160deg, #121827 0%, #1F2A44 100%);
+    color: #E5E7EB;
+    padding: 40px 36px;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    gap:18px;
+    border-right: 1px solid rgba(255,255,255,0.08);
+  }
+  .auth-brand::before,
+  .auth-brand::after{
+    content: '';
+    position:absolute;
+    border-radius:50%;
+    opacity: .12;
+    pointer-events:none;
+  }
+  .auth-brand::before{
+    width: 140px;
+    height: 140px;
+    right: -40px;
+    top: 10px;
+    background: rgba(96,165,250,.18);
+    animation: floatBrand 10s ease-in-out infinite;
+  }
+  .auth-brand::after{
+    width: 260px;
+    height: 260px;
+    left: -80px;
+    bottom: -60px;
+    background: linear-gradient(180deg, rgba(59,130,246,0.10), rgba(59,130,246,0));
+    animation: floatBrand 14s ease-in-out infinite reverse;
   }
   .auth-brand-icon{
-    width:44px; height:44px; border-radius:12px; background: var(--accent);
+    width:44px; height:44px; border-radius:14px; background: rgba(255,255,255,0.08);
     display:flex; align-items:center; justify-content:center;
+    border: 1px solid rgba(255,255,255,0.12);
   }
   .auth-brand-icon svg{ width:22px; height:22px; }
-  .auth-brand h1{ color:#fff; font-size:19px; margin:0; }
-  .auth-brand .sub{ font-size:13px; color:#8C93A3; margin:2px 0 0; }
-  .auth-brand-desc{ font-size:13px; line-height:1.6; color:#A6ACBB; margin: 10px 0 0; max-width: 260px; }
-  .auth-form-panel{ padding: 44px 38px; display:flex; flex-direction:column; justify-content:center; }
-  .auth-form-panel label{ font-size:12px; color: var(--muted); display:block; margin-bottom:5px; font-weight:600; }
-  .auth-input{ width:100%; padding:11px 12px; border-radius:8px; border:1px solid var(--border); font-size:14px; margin-bottom:16px; }
-  .auth-btn{ width:100%; background: var(--accent); color:#fff; border:none; padding:11px; border-radius:8px; font-size:13.5px; font-weight:600; cursor:pointer; margin-top:6px; }
-  .auth-error{ font-size:12px; color:#B91C1C; margin: -8px 0 12px; }
-  .auth-hint{ font-size:11.5px; color: var(--muted); text-align:center; margin-top:18px; }
+  .auth-brand h1{ color:#fff; font-size:28px; margin:0; letter-spacing:0.12em; text-transform:uppercase; }
+  .auth-tagline{ font-size:16px; color:#D1D5DB; line-height:1.7; max-width:340px; margin:0; }
+  .brand-features{ display:grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap:10px; margin-top:16px; }
+  .feature-pill{ font-size:12px; color:#E5E7EB; background: rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.14); padding:10px 12px; border-radius:14px; }
+  .auth-hero{ display:grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap:12px; margin-top:18px; }
+  .hero-item{ display:flex; align-items:center; justify-content:flex-start; min-height:64px; border-radius:18px; background: rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.10); gap:12px; padding: 12px 14px; }
+  .hero-item span{ font-size:13px; color:#E5E7EB; font-weight:600; }
+  .hero-item svg{ width:24px; height:24px; fill:none; stroke:#A5B4FC; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+  .hero-cart{ animation: slideX 5s ease-in-out infinite; }
+  .hero-tag{ animation: floatY 6s ease-in-out infinite; }
+  .hero-box{ animation: rotateZ 8s ease-in-out infinite; }
+  .hero-bottle{ animation: pulseScale 7s ease-in-out infinite; }
+  @keyframes slideX { 0%,100%{ transform: translateX(0); } 50%{ transform: translateX(3px); } }
+  @keyframes floatY { 0%,100%{ transform: translateY(0); } 50%{ transform: translateY(-4px); } }
+  @keyframes rotateZ { 0%,100%{ transform: rotate(0deg); } 50%{ transform: rotate(4deg); } }
+  @keyframes pulseScale { 0%,100%{ transform: scale(1); } 50%{ transform: scale(1.03); } }
+  @keyframes floatBrand {
+    0%,100%{ transform: translateY(0) scale(1); }
+    50%{ transform: translateY(-10px) scale(1.03); }
+  }
+  @keyframes pulseIcon {
+    0%,100%{ transform: translateY(0) scale(1); }
+    40%{ transform: translateY(-1px) scale(1.02); }
+    70%{ transform: translateY(1px) scale(0.98); }
+  }
+  .auth-brand-desc{ font-size:13px; line-height:1.7; color:#BDC8E0; margin: 0; max-width: 320px; }
+  .auth-form-panel{ padding: 42px 36px; display:flex; flex-direction:column; gap:18px; background: rgba(255,255,255,0.98); }
+  .auth-form-header{ display:flex; flex-direction:column; gap:6px; }
+  .auth-form-panel label{ font-size:13px; color: var(--text); display:block; margin-bottom:8px; font-weight:700; }
+  .auth-form-panel .panel-title{ margin:0; font-size:20px; color:#111827; }
+  .auth-form-panel .panel-sub{ margin:6px 0 0; color:#6B7280; font-size:13px; line-height:1.65; }
+  .auth-field{ position:relative; display:flex; flex-direction:column; gap:10px; }
+  .auth-field.password{ margin-bottom:2px; }
+  .auth-input{ width:100%; padding:14px 14px; border-radius:14px; border:1px solid #D1D5DB; font-size:15px; background: #F9FAFB; color:#111827; }
+  .auth-input:focus{ border-color: var(--accent); outline:none; box-shadow: 0 0 0 3px rgba(59,130,246,0.12); }
+  .toggle-password{ position:absolute; right:14px; top:50%; transform:translateY(-50%); border:none; background:transparent; color: var(--muted); font-size:13px; cursor:pointer; padding:6px; }
+  .toggle-password:hover{ color: var(--accent-dark); }
+  .auth-btn{ width:100%; background: var(--accent); color:#fff; border:none; padding:14px; border-radius:14px; font-size:15px; font-weight:700; cursor:pointer; margin-top:4px; box-shadow: 0 16px 28px -18px rgba(59,130,246,0.45); }
+  .auth-btn:hover{ background: var(--accent-dark); }
+  .auth-error{ font-size:12px; color:#B91C1C; margin: -10px 0 6px; }
+  .auth-hint{ font-size:12px; color: #475569; text-align:center; margin-top:0; }
+  .auth-form-panel button.auth-btn{ margin-top:14px; }
+
   @media (max-width: 640px){
     .auth-split{ grid-template-columns: 1fr; }
-    .auth-brand{ padding: 28px 26px 22px; }
+    .auth-brand{ padding: 28px 24px 22px; }
     .auth-brand-desc{ display:none; }
-    .auth-form-panel{ padding: 26px; }
+    .auth-form-panel{ padding: 24px; }
   }
-
   @media (max-width: 860px){
     .topbar{ display:flex; }
     .sidebar{ position:fixed; left:0; top:0; height:100vh; z-index:50; transform:translateX(-100%); transition: transform .2s; width: 82%; max-width:320px; }
@@ -147,20 +234,51 @@
   <div class="auth-split">
     <div class="auth-brand">
       <div class="auth-brand-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l1.5-5h15L21 9"></path><path d="M3 9a2 2 0 0 0 4 0 2 2 0 0 0 4 0 2 2 0 0 0 4 0 2 2 0 0 0 4 0"></path><path d="M5 9v10h14V9"></path><path d="M9 19v-6h6v6"></path></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="#A5B4FC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M8 7v12h8V7"/><path d="M8 11h8"/></svg>
       </div>
-      <h1>Sistema de Planograma</h1>
-      <p class="sub">Opção Supermercados</p>
-      <p class="auth-brand-desc">Acesso restrito à equipe da loja. Repositores consultam os layouts de gôndola, administradores gerenciam o catálogo e as fotos.</p>
+      <h1>Planograma</h1>
+      <div class="brand-features">
+        <span class="feature-pill">Gestão de planograma</span>
+        <span class="feature-pill">Validação por QR</span>
+        <span class="feature-pill">Layouts práticos</span>
+        <span class="feature-pill">Acesso seguro</span>
+      </div>
+      <div class="auth-hero">
+        <div class="hero-item hero-cart">
+          <svg viewBox="0 0 24 24"><path d="M6 8h12l-1.5 9H7.5L6 8z"/><circle cx="9" cy="19" r="1.5"/><circle cx="15" cy="19" r="1.5"/></svg>
+          <span>Operações</span>
+        </div>
+        <div class="hero-item hero-tag">
+          <svg viewBox="0 0 24 24"><path d="M5 12l7-7 7 7-7 7-7-7z"/><path d="M12 9v6"/></svg>
+          <span>Conformidade</span>
+        </div>
+        <div class="hero-item hero-box">
+          <svg viewBox="0 0 24 24"><path d="M4 10l8-5 8 5v8l-8 5-8-5v-8z"/><path d="M12 5v14"/></svg>
+          <span>Layout</span>
+        </div>
+        <div class="hero-item hero-bottle">
+          <svg viewBox="0 0 24 24"><path d="M10 3h4v4h-4z"/><path d="M9 7h6l-1 12H10L9 7z"/></svg>
+          <span>Estoque</span>
+        </div>
+      </div>
     </div>
     <div class="auth-form-panel">
-      <label>Usuário</label>
-      <input type="text" id="loginUser" class="auth-input" placeholder="repositor" autocomplete="username">
-      <label>Senha</label>
-      <input type="password" id="loginPass" class="auth-input" placeholder="••••••••" autocomplete="current-password">
+      <div class="auth-form-header">
+        <p class="panel-title">Acesso ao sistema</p>
+        <p class="panel-sub">Digite seu usuário e senha para entrar no painel corporativo de planogramas.</p>
+      </div>
+      <div class="auth-field">
+        <label>Usuário</label>
+        <input type="text" id="loginUser" class="auth-input" placeholder="admopcao" autocomplete="username">
+      </div>
+      <div class="auth-field password">
+        <label>Senha</label>
+        <input type="password" id="loginPass" class="auth-input" placeholder="••••••••" autocomplete="current-password">
+        <button type="button" class="toggle-password" id="togglePassword">Mostrar</button>
+      </div>
       <div class="auth-error" id="loginError" style="display:none;"></div>
       <button class="auth-btn" id="loginBtn" type="button">Entrar</button>
-      <p class="auth-hint">Fale com o administrador se não tiver acesso.</p>
+      <p class="auth-hint">Esqueceu a senha?</p>
     </div>
   </div>
   <div class="auth-footer">© 2026 Ws Logicflow. Todos os direitos reservados.</div>
@@ -173,15 +291,18 @@
 
 <div class="app">
   <aside class="sidebar" id="sidebar">
-    <div class="sidebar-title">Sistema de Planograma</div>
-    <div class="sidebar-sub">Opção Supermercados</div>
-
-    <div class="sidebar-admin">
-      <div class="admin-badge" id="sessionBadge"><span class="dot"></span><span id="sessionLabel"></span></div>
-      <button class="admin-btn ghost" id="logoutBtn" type="button">Sair</button>
+    <div>
+      <div class="sidebar-title">Sistema de Planograma</div>
+      <div class="sidebar-sub">Opção Supermercados</div>
+      <div id="deptList"></div>
     </div>
-
-    <div id="deptList"></div>
+    <div class="sidebar-footer">
+      <div class="sidebar-admin">
+        <div class="admin-badge" id="sessionBadge"><span class="dot"></span><span id="sessionLabel"></span></div>
+        <button class="admin-btn ghost" id="settingsBtn" type="button" style="display:none;">Configurações</button>
+        <button class="admin-btn ghost" id="logoutBtn" type="button">Sair</button>
+      </div>
+    </div>
   </aside>
 
   <main class="main">
@@ -228,7 +349,18 @@ const USER_EMAIL_MAP = {
   'admopcao': 'admopcao@interno.opcaosupermercados.local',
   'repositor': 'repositor@interno.opcaosupermercados.local',
 };
+const INTERNAL_EMAIL_DOMAINS = ['interno.opcaosupermercados.local', 'interno.opcaosupermercados.com'];
+const CURRENT_INTERNAL_EMAIL_DOMAIN = INTERNAL_EMAIL_DOMAINS[0];
 const REPOSITOR_EMAIL = USER_EMAIL_MAP['repositor'];
+
+function buildInternalEmail(alias){
+  return `${alias.trim().toLowerCase()}@${CURRENT_INTERNAL_EMAIL_DOMAIN}`;
+}
+
+function buildInternalEmailVariants(alias){
+  const normalized = alias.trim().toLowerCase();
+  return INTERNAL_EMAIL_DOMAINS.map(domain => `${normalized}@${domain}`);
+}
 
 /* Usado só pelo botão "Importar dados iniciais" (roda uma vez, popula as tabelas) */
 const seedData = [
@@ -276,9 +408,184 @@ let currentUser = null;
 let isAdmin = false;
 let departamentos = [];
 let activeDeptIdx = 0;
+let activePage = 'dept';
 let deepLinkHandled = false;
+let subOrderMap = {};
+let isDraggingSub = false;
+let currentDragSub = null;
+const SUB_ORDER_STORAGE_KEY = 'planogramaSubOrders';
+const USER_ACCOUNT_STORAGE_KEY = 'planogramaUserAccounts';
+const DEFAULT_USER_ACCOUNTS = [
+  { alias:'admopcao', email:'admopcao@interno.opcaosupermercados.com', role:'admin' },
+  { alias:'repositor', email:'repositor@interno.opcaosupermercados.com', role:'repositor' },
+];
+const SYSTEM_VERSIONS = [
+  { version:'1.0.0', date:'08/07/2026', message:'Lançamento inicial do painel com reordenação por drag-and-drop, controle admin e modo escuro.' },
+];
+let themeMode = 'light';
+let userAccounts = [];
+
+function loadThemePreference(){
+  const stored = localStorage.getItem('planogramaTheme');
+  themeMode = stored === 'dark' ? 'dark' : 'light';
+  applyTheme(themeMode);
+}
+
+function saveThemePreference(){
+  localStorage.setItem('planogramaTheme', themeMode);
+}
+
+function applyTheme(mode){
+  themeMode = mode === 'dark' ? 'dark' : 'light';
+  document.body.classList.toggle('dark', themeMode === 'dark');
+  const btn = document.getElementById('themeToggleBtn');
+  if (btn) btn.textContent = themeMode === 'dark' ? 'Modo claro' : 'Modo escuro';
+  saveThemePreference();
+}
+
+function loadSubOrders(){
+  try{ subOrderMap = JSON.parse(localStorage.getItem(SUB_ORDER_STORAGE_KEY) || '{}') || {}; }
+  catch(e){ subOrderMap = {}; }
+}
+
+function saveSubOrders(){
+  localStorage.setItem(SUB_ORDER_STORAGE_KEY, JSON.stringify(subOrderMap));
+}
+
+function loadUserAccounts(){
+  try{ userAccounts = JSON.parse(localStorage.getItem(USER_ACCOUNT_STORAGE_KEY) || '[]') || []; }
+  catch(e){ userAccounts = []; }
+  const existingEmails = userAccounts.map(u => u.email.toLowerCase());
+  DEFAULT_USER_ACCOUNTS.forEach(base => {
+    if (!existingEmails.includes(base.email.toLowerCase())) userAccounts.unshift({ ...base });
+  });
+}
+
+function saveUserAccounts(){
+  const customAccounts = userAccounts.filter(u => !DEFAULT_USER_ACCOUNTS.some(base => base.email.toLowerCase() === u.email.toLowerCase()));
+  localStorage.setItem(USER_ACCOUNT_STORAGE_KEY, JSON.stringify(customAccounts));
+}
+
+function getAccountByEmail(email){
+  const normalizedEmail = email.trim().toLowerCase();
+  let account = userAccounts.find(u => u.email.toLowerCase() === normalizedEmail);
+  if (account) return account;
+  const fallbackAlias = normalizedEmail.split('@')[0];
+  const fallback = DEFAULT_USER_ACCOUNTS.find(u => u.alias === fallbackAlias);
+  if (fallback){
+    const validEmails = buildInternalEmailVariants(fallbackAlias);
+    if (validEmails.includes(normalizedEmail)){
+      account = { ...fallback, email: normalizedEmail };
+      if (!userAccounts.some(u => u.email.toLowerCase() === normalizedEmail)){
+        userAccounts.unshift(account);
+        saveUserAccounts();
+      }
+      return account;
+    }
+  }
+  return null;
+}
+
+function resolveAuthEmailCandidates(identifier){
+  const normalized = identifier.trim().toLowerCase();
+  if (!normalized) return [];
+  if (normalized.includes('@')) return [normalized];
+  const account = userAccounts.find(u => u.alias === normalized) || DEFAULT_USER_ACCOUNTS.find(u => u.alias === normalized);
+  const explicit = account ? account.email : buildInternalEmail(normalized);
+  const variants = buildInternalEmailVariants(normalized).filter(email => email !== explicit);
+  return [explicit, ...variants];
+}
+
+function getAliasFromInternalEmail(email){
+  const normalized = email.trim().toLowerCase();
+  if (!normalized.includes('@')) return null;
+  const [alias, domain] = normalized.split('@');
+  return INTERNAL_EMAIL_DOMAINS.includes(domain) ? alias : null;
+}
+
+async function ensureKnownUserExists(email, password){
+  const alias = getAliasFromInternalEmail(email);
+  if (!alias) return false;
+  const account = userAccounts.find(u => u.alias === alias) || DEFAULT_USER_ACCOUNTS.find(u => u.alias === alias);
+  if (!account) return false;
+
+  const { error } = await sb.auth.signUp({ email, password });
+  if (!error){
+    if (!userAccounts.some(u => u.email.toLowerCase() === email.toLowerCase())){
+      userAccounts.unshift({ alias: account.alias, email, role: account.role });
+      saveUserAccounts();
+    }
+    return true;
+  }
+  return false;
+}
+
+function removeUserAccount(alias){
+  const account = userAccounts.find(u => u.alias === alias);
+  if (!account) return;
+  if (DEFAULT_USER_ACCOUNTS.some(base => base.alias === alias)){
+    alert('Usuários padrão não podem ser removidos aqui.');
+    return;
+  }
+  if (!confirm(`Remover o usuário local "${alias}"?`)) return;
+  userAccounts = userAccounts.filter(u => u.alias !== alias);
+  saveUserAccounts();
+  renderSettingsPage();
+}
+
+function toggleUserRole(alias){
+  const account = userAccounts.find(u => u.alias === alias);
+  if (!account) return;
+  account.role = account.role === 'admin' ? 'repositor' : 'admin';
+  saveUserAccounts();
+  renderSettingsPage();
+}
+
+function getUserAliasByEmail(email){
+  const account = userAccounts.find(u => u.email === email);
+  return account ? account.alias : null;
+}
+
+function formatTimestamp(ts){
+  return new Date(ts).toLocaleString('pt-BR', { hour12:false });
+}
+
+function renderVersionHistory(){
+  if (!SYSTEM_VERSIONS.length) return '<p>Nenhuma versão registrada ainda.</p>';
+  return `<table class="list-table">${SYSTEM_VERSIONS.map(entry=>`
+      <tr><td>${entry.date}</td><td><strong>${entry.version}</strong> — ${entry.message}</td></tr>`).join('')}</table>`;
+}
+
+function renderUserAccountsList(){
+  if (!userAccounts.length) return '<p>Nenhum usuário configurado.</p>';
+  return `<table class="list-table">${userAccounts.map(u=>`
+      <tr>
+        <td><strong>${u.alias}</strong><br><small>${u.email}</small></td>
+        <td>
+          <span class="list-badge">${u.role}</span>
+          <button class="btn-outline" data-action="toggle-role" data-alias="${u.alias}" type="button">Trocar papel</button>
+          <button class="btn-outline" data-action="remove-user" data-alias="${u.alias}" type="button">Remover</button>
+        </td>
+      </tr>`).join('')}</table>`;
+}
+
+function applySavedSubOrders(){
+  departamentos.forEach((dept)=>{
+    const stored = Array.isArray(subOrderMap[dept.code]) ? [...subOrderMap[dept.code]] : [];
+    const existingCodes = dept.subs.map(s => s.code);
+    const ordered = [];
+    stored.forEach(code => {
+      if (existingCodes.includes(code)) ordered.push(dept.subs.find(s => s.code === code));
+    });
+    dept.subs.forEach(sub => { if (!ordered.find(s => s.code === sub.code)) ordered.push(sub); });
+    dept.subs = ordered;
+    subOrderMap[dept.code] = ordered.map(s => s.code);
+  });
+  saveSubOrders();
+}
 
 async function initAuth(){
+  loadUserAccounts();
   const { data:{ session } } = await sb.auth.getSession();
   await handleSession(session);
   sb.auth.onAuthStateChange((_event, session)=> handleSession(session));
@@ -286,11 +593,26 @@ async function initAuth(){
 
 async function handleSession(session){
   currentUser = session ? session.user : null;
-  isAdmin = !!currentUser && currentUser.email !== REPOSITOR_EMAIL;
+  let account = currentUser ? getAccountByEmail(currentUser.email) : null;
+  if (!account && currentUser){
+    const aliasFromEmail = currentUser.email.split('@')[0].toLowerCase();
+    account = DEFAULT_USER_ACCOUNTS.find(u => u.alias === aliasFromEmail) || null;
+    if (account){
+      if (!userAccounts.some(u => u.email.toLowerCase() === currentUser.email.toLowerCase())){
+        userAccounts.unshift({ ...account });
+        saveUserAccounts();
+      }
+    }
+  }
+  isAdmin = !!account && account.role === 'admin';
   document.getElementById('authGate').classList.toggle('hidden', !!currentUser);
 
+  const settingsBtn = document.getElementById('settingsBtn');
+  if (settingsBtn){ settingsBtn.style.display = isAdmin ? 'inline-flex' : 'none'; }
+
   if (currentUser){
-    document.getElementById('sessionLabel').textContent = isAdmin ? `Admin: ${currentUser.email}` : 'Repositor';
+    const label = account ? `${account.alias} · ${account.role}` : currentUser.email;
+    document.getElementById('sessionLabel').textContent = isAdmin ? `Admin: ${label}` : `Repositor: ${label}`;
     await loadData();
     if (!deepLinkHandled){
       deepLinkHandled = true;
@@ -303,26 +625,74 @@ async function handleSession(session){
   }
 }
 
+async function createUserFlow(){
+  const alias = prompt('Alias de login (ex: vendedor):');
+  if (!alias) return;
+  const normalized = alias.trim().toLowerCase();
+  if (userAccounts.some(u => u.alias === normalized)){
+    alert('Esse alias já existe. Escolha outro.');
+    return;
+  }
+  const password = prompt('Senha do usuário:');
+  if (!password) return;
+  const role = confirm('Esse usuário deve ser administrador?\nOK = Sim / Cancelar = Repositor') ? 'admin' : 'repositor';
+  const email = buildInternalEmail(normalized);
+
+  const { error } = await sb.auth.signUp({ email, password });
+  if (error){
+    const msg = error.message || 'Erro desconhecido';
+    if (msg.toLowerCase().includes('already registered') || msg.toLowerCase().includes('já existe')){
+      if (!userAccounts.some(u => u.email === email)){
+        userAccounts.unshift({ alias: normalized, email, role });
+        saveUserAccounts();
+      }
+      alert('Usuário já estava registrado, mas o alias foi adicionado ao painel.');
+      renderSettingsPage();
+      return;
+    }
+    alert('Não foi possível criar o usuário: ' + msg);
+    return;
+  }
+
+  userAccounts.unshift({ alias: normalized, email, role });
+  saveUserAccounts();
+  renderSettingsPage();
+}
+
 document.getElementById('loginBtn').addEventListener('click', async ()=>{
-  const username = document.getElementById('loginUser').value.trim().toLowerCase();
+  const username = document.getElementById('loginUser').value.trim();
   const pass = document.getElementById('loginPass').value;
   const errBox = document.getElementById('loginError');
   errBox.style.display = 'none';
 
-  const email = USER_EMAIL_MAP[username];
-  if (!email){
-    errBox.textContent = 'Usuário inválido.';
+  const emails = resolveAuthEmailCandidates(username);
+  if (!emails.length){
+    errBox.textContent = 'Usuário ou e-mail inválido.';
     errBox.style.display = 'block';
     return;
   }
-  const { error } = await sb.auth.signInWithPassword({ email, password: pass });
-  if (error){
-    errBox.textContent = 'Senha incorreta.';
-    errBox.style.display = 'block';
+
+  let lastError = null;
+  for (const email of emails){
+    const { error } = await sb.auth.signInWithPassword({ email, password: pass });
+    if (!error) return;
+    lastError = error;
   }
+
+  errBox.textContent = `Erro de login: ${lastError?.message || 'Senha incorreta.'}`;
+  errBox.style.display = 'block';
 });
 
-document.getElementById('logoutBtn').addEventListener('click', ()=> sb.auth.signOut());
+document.getElementById('togglePassword').addEventListener('click', ()=>{
+  const input = document.getElementById('loginPass');
+  const btn = document.getElementById('togglePassword');
+  const isHidden = input.type === 'password';
+  input.type = isHidden ? 'text' : 'password';
+  btn.textContent = isHidden ? 'Ocultar' : 'Mostrar';
+});
+
+document.getElementById('logoutBtn').addEventListener('click', ()=>{ sb.auth.signOut(); activePage = 'dept'; });
+document.getElementById('settingsBtn').addEventListener('click', ()=>{ activePage = 'settings'; renderMain(); });
 
 /* ---------- Dados (Postgres via Supabase) ---------- */
 async function loadData(){
@@ -333,6 +703,8 @@ async function loadData(){
     code: d.code, name: d.name, ord: d.ord,
     subs: (subs || []).filter(s => s.dept_code === d.code).map(s => ({ code: s.code, name: s.name, image_url: s.image_url || '' })),
   }));
+  loadSubOrders();
+  applySavedSubOrders();
   renderDepts();
   renderMain();
 }
@@ -364,6 +736,10 @@ function renderDepts(){
 
 function renderMain(){
   const content = document.getElementById('content');
+  if (activePage === 'settings'){
+    renderSettingsPage();
+    return;
+  }
   const dept = departamentos[activeDeptIdx];
   if (!dept){
     document.getElementById('breadcrumb').textContent = 'Mercadológico';
@@ -391,7 +767,7 @@ function renderMain(){
     return;
   }
 
-  document.getElementById('deptDesc').textContent = `${subs.length} submercadológicos — clique num pra abrir o layout.${isAdmin ? ' Arraste uma foto sobre o card pra anexar.' : ''}`;
+  document.getElementById('deptDesc').textContent = `${subs.length} submercadológicos — clique num pra abrir o layout.${isAdmin ? ' Arraste uma foto sobre o card pra anexar foto ou arraste o card para reordenar.' : ''}`;
   content.innerHTML = `
     <div class="section-toolbar">
       <span></span>
@@ -400,7 +776,7 @@ function renderMain(){
     <div class="subs-grid">${subs.map(s=>{
       const has = !!s.image_url;
       return `
-        <button class="sub-card" data-sub="${s.code}" type="button">
+        <button class="sub-card" data-sub="${s.code}" type="button"${isAdmin ? ' draggable="true"' : ''}>
           ${isAdmin ? `<span class="card-remove" data-remove="${s.code}" title="Remover item">✕</span>` : ''}
           <div class="top-row">
             <span class="code">${dept.code}-${s.code}</span>
@@ -418,6 +794,52 @@ function renderMain(){
     wireCardUpload(dept);
     wireCardDragDrop(dept);
   }
+}
+
+function renderSettingsPage(){
+  if (!isAdmin){ activePage = 'dept'; renderMain(); return; }
+  const content = document.getElementById('content');
+  document.getElementById('breadcrumb').textContent = 'Configurações';
+  document.getElementById('deptTitle').textContent = 'Painel administrativo';
+  document.getElementById('deptDesc').textContent = 'Veja atualizações, gerencie usuários e configure o aplicativo.';
+  content.innerHTML = `
+    <div class="settings-panel">
+      <section class="settings-section">
+        <h2>Administração</h2>
+        <p>Use estas ações para manter o sistema atualizado e a navegação bem estruturada.</p>
+        <div class="settings-actions">
+          <button class="btn-outline" id="importAdminBtn" type="button">Importar dados iniciais</button>
+          <button class="btn-outline" id="reloadAdminBtn" type="button">Recarregar dados</button>
+          <button class="btn-outline" id="themeToggleBtn" type="button">${themeMode === 'dark' ? 'Modo claro' : 'Modo escuro'}</button>
+          <button class="btn-outline" id="backToDeptBtn" type="button">Voltar aos setores</button>
+        </div>
+      </section>
+      <section class="settings-section">
+        <h2>Versões do sistema</h2>
+        ${renderVersionHistory()}
+      </section>
+      <section class="settings-section">
+        <h2>Usuários</h2>
+        <p>Gerencie aliases de login e papéis do aplicativo.</p>
+        ${renderUserAccountsList()}
+        <div class="settings-actions" style="margin-top:12px;">
+          <button class="btn-outline" id="createUserBtn" type="button">Cadastrar usuário</button>
+          <button class="btn-outline" id="clearUpdatesBtn" type="button">Limpar histórico</button>
+        </div>
+      </section>
+    </div>`;
+  document.getElementById('importAdminBtn').addEventListener('click', async ()=>{ await importSeedData(); });
+  document.getElementById('reloadAdminBtn').addEventListener('click', () => { loadData(); });
+  document.getElementById('themeToggleBtn').addEventListener('click', () => { applyTheme(themeMode === 'dark' ? 'light' : 'dark'); });
+  document.getElementById('backToDeptBtn').addEventListener('click', () => { activePage = 'dept'; renderMain(); });
+  document.getElementById('createUserBtn').addEventListener('click', createUserFlow);
+  content.querySelectorAll('[data-action]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const alias = btn.dataset.alias;
+      if (btn.dataset.action === 'toggle-role') toggleUserRole(alias);
+      if (btn.dataset.action === 'remove-user') removeUserAccount(alias);
+    });
+  });
 }
 
 /* ---------- CRUD de submercadológico ---------- */
@@ -456,13 +878,55 @@ function wireCardUpload(dept){
 function wireCardDragDrop(dept){
   document.querySelectorAll('.sub-card').forEach(card=>{
     const subCode = card.dataset.sub;
-    card.addEventListener('dragover', (e)=>{ e.preventDefault(); card.classList.add('drag-over'); });
-    card.addEventListener('dragleave', ()=> card.classList.remove('drag-over'));
+
+    card.addEventListener('dragstart', (e)=>{
+      if (!isAdmin) return;
+      currentDragSub = subCode;
+      isDraggingSub = true;
+      e.dataTransfer.effectAllowed = 'move';
+      try{ e.dataTransfer.setData('text/plain', subCode); }catch(err){}
+      card.classList.add('dragging');
+    });
+
+    card.addEventListener('dragend', ()=>{
+      isDraggingSub = false;
+      currentDragSub = null;
+      document.querySelectorAll('.sub-card.drag-over, .sub-card.dragging').forEach(el=> el.classList.remove('drag-over','dragging'));
+    });
+
+    card.addEventListener('dragover', (e)=>{
+      if (!isAdmin) return;
+      e.preventDefault();
+      card.classList.add('drag-over');
+    });
+
+    card.addEventListener('dragleave', ()=>{
+      if (!isAdmin) return;
+      card.classList.remove('drag-over');
+    });
+
     card.addEventListener('drop', async (e)=>{
       e.preventDefault(); e.stopPropagation();
       card.classList.remove('drag-over');
+      if (!isAdmin) return;
+
       const file = e.dataTransfer.files && e.dataTransfer.files[0];
-      if (file) await uploadImageForSub(dept.code, subCode, file);
+      if (file){
+        await uploadImageForSub(dept.code, subCode, file);
+        return;
+      }
+
+      if (!currentDragSub || currentDragSub === subCode) return;
+      const order = Array.isArray(subOrderMap[dept.code]) ? [...subOrderMap[dept.code]] : dept.subs.map(s => s.code);
+      const fromIndex = order.indexOf(currentDragSub);
+      const toIndex = order.indexOf(subCode);
+      if (fromIndex === -1 || toIndex === -1) return;
+      order.splice(fromIndex, 1);
+      order.splice(toIndex, 0, currentDragSub);
+      subOrderMap[dept.code] = order;
+      saveSubOrders();
+      applySavedSubOrders();
+      renderMain();
     });
   });
 }
@@ -644,11 +1108,13 @@ document.getElementById('deptList').addEventListener('click', (e)=>{
   const btn = e.target.closest('.dept-btn');
   if (!btn) return;
   activeDeptIdx = Number(btn.dataset.idx);
+  activePage = 'dept';
   renderDepts(); renderMain();
   document.getElementById('sidebar').classList.remove('open');
 });
 
 document.getElementById('content').addEventListener('click', (e)=>{
+  if (isDraggingSub) return;
   const card = e.target.closest('.sub-card');
   if (!card) return;
   const dept = departamentos[activeDeptIdx];
@@ -660,6 +1126,7 @@ document.getElementById('modalOverlay').addEventListener('click', (e)=>{ if (e.t
 document.addEventListener('keydown', (e)=>{ if (e.key === 'Escape') closeModal(); });
 document.getElementById('menuToggle').addEventListener('click', ()=> document.getElementById('sidebar').classList.toggle('open'));
 
+loadThemePreference();
 initAuth();
 </script>
 </body>
