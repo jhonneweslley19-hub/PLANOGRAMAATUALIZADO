@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sistema de Planograma — Opção Supermercados</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root{
+    --sidebar-bg: #1B2130; --sidebar-text: #A6ACBB; --sidebar-active: #262E42;
+    --accent: #3B82F6; --accent-dark: #2563EB;
+    --bg: #F1F2F5; --card-bg: #FFFFFF; --border: #E2E4E9;
+    --text: #181B22; --muted: #6B7280;
+    --ok: #16A34A; --ok-bg: #EAF7EE; --pending-bg: #F4F1EA; --pending-text: #92795A;
+    --radius: 12px;
+  }
+  *{ box-sizing:border-box; }
+  body{ margin:0; background: var(--bg); color: var(--text); font-family:'Inter', system-ui, sans-serif; -webkit-font-smoothing:antialiased; }
+  .mono{ font-family:'IBM Plex Mono', monospace; }
+  button{ font-family:inherit; }
+  :focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
+  .app{ display:flex; min-height:100vh; }
+
+  .topbar{ display:none; align-items:center; justify-content:space-between; background: var(--sidebar-bg); color:#fff; padding:14px 18px; }
+  .topbar button{ background:transparent; border:1px solid rgba(255,255,255,0.25); color:#fff; border-radius:8px; padding:6px 10px; font-size:13px; cursor:pointer; }
+
+  .sidebar{ width: 300px; flex-shrink:0; background: var(--sidebar-bg); color: var(--sidebar-text); padding: 26px 16px; height:100vh; position:sticky; top:0; overflow-y:auto; }
+  .sidebar-title{ color:#fff; font-weight:700; font-size:16px; padding: 0 10px 4px; }
+  .sidebar-sub{ font-size:12px; color:#7C8399; padding: 0 10px 16px; }
+  .dept-btn{ width:100%; display:flex; align-items:center; justify-content:space-between; gap:8px; background:transparent; border:none; color: var(--sidebar-text); text-align:left; padding: 11px 10px; border-radius:8px; cursor:pointer; font-size:13.5px; margin-bottom:2px; transition: background .15s, color .15s; }
+  .dept-btn:hover{ background: var(--sidebar-active); color:#fff; }
+  .dept-btn.active{ background: var(--accent); color:#fff; font-weight:600; }
+  .dept-btn .code{ font-family:'IBM Plex Mono', monospace; font-size:11px; opacity:.7; margin-right:8px; }
+  .dept-btn .count{ font-family:'IBM Plex Mono', monospace; font-size:10.5px; background: rgba(255,255,255,0.1); padding:2px 7px; border-radius:999px; flex-shrink:0; }
+  .dept-btn.active .count{ background: rgba(255,255,255,0.25); }
+
+  .main{ flex:1; padding: 34px 40px; min-width:0; }
+  .breadcrumb{ font-size:13px; color: var(--muted); margin-bottom:6px; }
+  .main h1{ font-size: 24px; margin: 0 0 4px; }
+  .main .desc{ color: var(--muted); font-size:14px; margin-bottom:28px; }
+
+  .subs-grid{ display:grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
+  .sub-card{ position:relative; background: var(--card-bg); border:1px solid var(--border); border-radius: var(--radius); padding: 16px; text-align:left; cursor:pointer; transition: box-shadow .15s, transform .15s, border-color .15s; display:flex; flex-direction:column; gap:10px; }
+  .sub-card:hover{ box-shadow: 0 10px 24px -10px rgba(20,25,40,0.18); transform: translateY(-2px); border-color: var(--accent); }
+  .sub-card.drag-over{ border-color: var(--accent); box-shadow: 0 0 0 3px rgba(59,130,246,0.18); }
+  .sub-card .top-row{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
+  .sub-card .code{ font-family:'IBM Plex Mono', monospace; font-size:11px; color: var(--muted); }
+  .sub-card .name{ font-size:14.5px; font-weight:600; line-height:1.3; }
+  .status-tag{ font-size:10.5px; font-weight:600; padding:3px 9px; border-radius:999px; white-space:nowrap; }
+  .status-tag.ok{ background: var(--ok-bg); color: var(--ok); }
+  .status-tag.pending{ background: var(--pending-bg); color: var(--pending-text); }
+  .card-remove{ position:absolute; top:8px; right:8px; width:22px; height:22px; border-radius:50%; background:#fff; border:1px solid var(--border); color:#B91C1C; font-size:12px; cursor:pointer; display:flex; align-items:center; justify-content:center; line-height:1; z-index:2; }
+  .upload-hint{ font-size:11px; color: var(--accent-dark); border:1px dashed #BFD4FB; background:#EFF5FF; border-radius:6px; padding:6px 8px; text-align:center; }
+  .add-card{ border: 1.5px dashed var(--border); border-radius: var(--radius); padding:16px; display:flex; align-items:center; justify-content:center; text-align:center; color: var(--muted); cursor:pointer; font-size:13px; font-weight:600; background:transparent; min-height:84px; }
+  .add-card:hover{ border-color: var(--accent); color: var(--accent-dark); }
+
+  .empty-state{ border: 1px dashed var(--border); border-radius: var(--radius); padding: 40px 30px; text-align:center; color: var(--muted); font-size:14px; background: var(--card-bg); }
+  .empty-state code{ display:inline-block; margin-top:10px; background: var(--bg); padding:8px 12px; border-radius:6px; font-family:'IBM Plex Mono', monospace; font-size:12px; color: var(--text); }
+
+  .modal-overlay{ position:fixed; inset:0; background: rgba(15,18,25,0.6); display:none; align-items:center; justify-content:center; padding: 24px; z-index: 100; }
+  .modal-overlay.open{ display:flex; }
+  .modal-box{ background: var(--card-bg); border-radius: 14px; max-width: 720px; width:100%; max-height: 88vh; overflow-y:auto; padding: 22px; }
+  .modal-head{ display:flex; align-items:flex-start; justify-content:space-between; gap:16px; margin-bottom:16px; }
+  .modal-head .b{ font-size:12px; color: var(--muted); margin-bottom:4px; }
+  .modal-head h2{ margin:0; font-size:18px; }
+  .modal-close{ background: var(--bg); border:none; width:32px; height:32px; border-radius:8px; cursor:pointer; font-size:16px; color: var(--text); flex-shrink:0; }
+  .modal-img{ width:100%; border-radius:10px; display:block; border:1px solid var(--border); }
+  .modal-empty{ border:1px dashed var(--border); border-radius:10px; padding: 46px 20px; text-align:center; color: var(--muted); font-size:13.5px; }
+  .modal-empty code{ display:inline-block; margin-top:12px; background: var(--bg); padding:8px 12px; border-radius:6px; font-family:'IBM Plex Mono', monospace; font-size:12px; color: var(--text); }
+  .modal-upload-row{ display:flex; gap:8px; margin-top:10px; flex-wrap:wrap; }
+  .modal-upload-row button{ background: var(--bg); border:1px solid var(--border); color: var(--text); padding: 8px 12px; border-radius:7px; font-size:12px; cursor:pointer; font-weight:500; }
+  .modal-upload-row button.danger{ color:#B91C1C; }
+
+  .feature-badge{ display:inline-flex; align-items:center; gap:12px; background: var(--card-bg); border:1px solid var(--border); border-radius: 999px; padding: 10px 18px 10px 10px; margin-bottom: 22px; box-shadow: 0 6px 16px -10px rgba(20,25,40,0.15); }
+  .feature-badge .icon{ width:34px; height:34px; border-radius:9px; background: linear-gradient(160deg,#FF9152,#F2701C); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .feature-badge .icon svg{ width:18px; height:18px; }
+  .feature-badge span{ font-size:13.5px; font-weight:600; }
+
+  .section-toolbar{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:16px; flex-wrap:wrap; }
+  .btn-outline{ background: var(--card-bg); border:1px solid var(--border); color: var(--text); padding: 9px 14px; border-radius:8px; font-size:13px; cursor:pointer; font-weight:500; display:inline-flex; align-items:center; gap:7px; }
+  .btn-outline:hover{ border-color: var(--accent); color: var(--accent-dark); }
+
+  .qr-section{ display:flex; align-items:center; gap:18px; margin-top:20px; padding-top:20px; border-top:1px solid var(--border); flex-wrap:wrap; }
+  .qr-code{ width:120px; height:120px; flex-shrink:0; background:#fff; padding:6px; border-radius:8px; border:1px solid var(--border); }
+  .qr-code img, .qr-code canvas{ width:100%; height:100%; display:block; }
+  .qr-info{ flex:1; min-width:180px; }
+  .qr-info .qr-label{ font-size:12px; color: var(--muted); margin-bottom:6px; }
+  .qr-link{ font-size:11.5px; color: var(--muted); word-break: break-all; margin-bottom:12px; }
+  .qr-buttons{ display:flex; gap:8px; flex-wrap:wrap; }
+  .qr-buttons button{ background: var(--accent); color:#fff; border:none; padding: 8px 14px; border-radius:7px; font-size:12.5px; font-weight:600; cursor:pointer; }
+  .qr-buttons button.secondary{ background: var(--bg); color: var(--text); border:1px solid var(--border); }
+
+  .sidebar-admin{ padding: 0 10px 18px; }
+  .admin-btn{ width:100%; background: var(--accent); color:#fff; border:none; padding:9px 10px; border-radius:8px; font-size:12.5px; cursor:pointer; text-align:center; font-weight:600; }
+  .admin-btn.ghost{ background: rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); }
+  .admin-badge{ display:flex; align-items:center; gap:6px; font-size:11.5px; color:#8CE0A8; margin-bottom:8px; word-break:break-all; }
+  .admin-badge .dot{ width:6px; height:6px; border-radius:50%; background:#8CE0A8; flex-shrink:0; }
+
+  .auth-gate{ position:fixed; inset:0; background: var(--bg); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; padding:24px; z-index: 200; }
+  .auth-gate.hidden{ display:none; }
+  .auth-footer{ font-size:11.5px; color: var(--muted); text-align:center; }
+  .auth-split{
+    display:grid; grid-template-columns: 1fr 1fr; max-width: 780px; width:100%;
+    background: var(--card-bg); border-radius:16px; overflow:hidden;
+    box-shadow: 0 30px 70px -30px rgba(20,25,40,0.35); border:1px solid var(--border);
+  }
+  .auth-brand{
+    background: var(--sidebar-bg); color: var(--sidebar-text); padding: 44px 38px;
+    display:flex; flex-direction:column; justify-content:center; gap:14px;
+  }
+  .auth-brand-icon{
+    width:44px; height:44px; border-radius:12px; background: var(--accent);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .auth-brand-icon svg{ width:22px; height:22px; }
+  .auth-brand h1{ color:#fff; font-size:19px; margin:0; }
+  .auth-brand .sub{ font-size:13px; color:#8C93A3; margin:2px 0 0; }
+  .auth-brand-desc{ font-size:13px; line-height:1.6; color:#A6ACBB; margin: 10px 0 0; max-width: 260px; }
+  .auth-form-panel{ padding: 44px 38px; display:flex; flex-direction:column; justify-content:center; }
+  .auth-form-panel label{ font-size:12px; color: var(--muted); display:block; margin-bottom:5px; font-weight:600; }
+  .auth-input{ width:100%; padding:11px 12px; border-radius:8px; border:1px solid var(--border); font-size:14px; margin-bottom:16px; }
+  .auth-btn{ width:100%; background: var(--accent); color:#fff; border:none; padding:11px; border-radius:8px; font-size:13.5px; font-weight:600; cursor:pointer; margin-top:6px; }
+  .auth-error{ font-size:12px; color:#B91C1C; margin: -8px 0 12px; }
+  .auth-hint{ font-size:11.5px; color: var(--muted); text-align:center; margin-top:18px; }
+  @media (max-width: 640px){
+    .auth-split{ grid-template-columns: 1fr; }
+    .auth-brand{ padding: 28px 26px 22px; }
+    .auth-brand-desc{ display:none; }
+    .auth-form-panel{ padding: 26px; }
+  }
+
+  @media (max-width: 860px){
+    .topbar{ display:flex; }
+    .sidebar{ position:fixed; left:0; top:0; height:100vh; z-index:50; transform:translateX(-100%); transition: transform .2s; width: 82%; max-width:320px; }
+    .sidebar.open{ transform:translateX(0); }
+    .main{ padding: 22px 18px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="auth-gate" id="authGate">
+  <div class="auth-split">
+    <div class="auth-brand">
+      <div class="auth-brand-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l1.5-5h15L21 9"></path><path d="M3 9a2 2 0 0 0 4 0 2 2 0 0 0 4 0 2 2 0 0 0 4 0 2 2 0 0 0 4 0"></path><path d="M5 9v10h14V9"></path><path d="M9 19v-6h6v6"></path></svg>
+      </div>
+      <h1>Sistema de Planograma</h1>
+      <p class="sub">Opção Supermercados</p>
+      <p class="auth-brand-desc">Acesso restrito à equipe da loja. Repositores consultam os layouts de gôndola, administradores gerenciam o catálogo e as fotos.</p>
+    </div>
+    <div class="auth-form-panel">
+      <label>Usuário</label>
+      <input type="text" id="loginUser" class="auth-input" placeholder="repositor" autocomplete="username">
+      <label>Senha</label>
+      <input type="password" id="loginPass" class="auth-input" placeholder="••••••••" autocomplete="current-password">
+      <div class="auth-error" id="loginError" style="display:none;"></div>
+      <button class="auth-btn" id="loginBtn" type="button">Entrar</button>
+      <p class="auth-hint">Fale com o administrador se não tiver acesso.</p>
+    </div>
+  </div>
+  <div class="auth-footer">© 2026 Ws Logicflow. Todos os direitos reservados.</div>
+</div>
+
+<div class="topbar">
+  <b>Planograma · Opção</b>
+  <button id="menuToggle" type="button">Setores ☰</button>
+</div>
+
+<div class="app">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-title">Sistema de Planograma</div>
+    <div class="sidebar-sub">Opção Supermercados</div>
+
+    <div class="sidebar-admin">
+      <div class="admin-badge" id="sessionBadge"><span class="dot"></span><span id="sessionLabel"></span></div>
+      <button class="admin-btn ghost" id="logoutBtn" type="button">Sair</button>
+    </div>
+
+    <div id="deptList"></div>
+  </aside>
+
+  <main class="main">
+    <div class="breadcrumb" id="breadcrumb">Mercadológico</div>
+    <h1 id="deptTitle">—</h1>
+    <p class="desc" id="deptDesc"></p>
+    <div class="feature-badge">
+      <span class="icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect><path d="M14 14h3v3h-3zM17 17h4v4h-4zM14 21h3M21 14v3"></path></svg>
+      </span>
+      <span>Leitura ágil por QR Code — a mesma foto aparece pra qualquer um que escanear</span>
+    </div>
+    <div id="content"><div class="empty-state">Carregando dados…</div></div>
+  </main>
+</div>
+
+<input type="file" id="fileInput" accept="image/*" style="display:none">
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal-box">
+    <div class="modal-head">
+      <div>
+        <div class="b" id="modalBread"></div>
+        <h2 id="modalTitle"></h2>
+      </div>
+      <button class="modal-close" id="modalClose" type="button">✕</button>
+    </div>
+    <div id="modalBody"></div>
+  </div>
+</div>
+
+<script>
+/* =========================================================================
+   1) COLE AQUI os dados do SEU projeto Supabase.
+   Painel do projeto > Project Settings > API > Project URL / anon public key
+   ========================================================================= */
+const SUPABASE_URL = 'https://elnriritpifmoqbbaqsh.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_3NAMzoKiRCOURqDkpRAxaA_JvWtA8wT';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+/* Contas criadas no painel do Supabase (Authentication > Users), com "Auto Confirm User" marcado.
+   O Supabase exige email, então cada "usuário" mapeia pra um email interno fixo. */
+const USER_EMAIL_MAP = {
+  'admopcao': 'admopcao@interno.opcaosupermercados.local',
+  'repositor': 'repositor@interno.opcaosupermercados.local',
+};
+const REPOSITOR_EMAIL = USER_EMAIL_MAP['repositor'];
+
+/* Usado só pelo botão "Importar dados iniciais" (roda uma vez, popula as tabelas) */
+const seedData = [
+  { code:'001', name:'MERCEARIA SALGADA', subs:[
+    { code:'001', name:'AMENDOIM CIA' },{ code:'002', name:'AZEITES' },{ code:'004', name:'BATATA FRITA' },
+    { code:'005', name:'ENLATADOS E CONSERVAS' },{ code:'007', name:'MASSAS' },{ code:'009', name:'OLEOS' },
+    { code:'010', name:'SALGADINHO E SNACK' },{ code:'011', name:'SARDINHA, ATUM CIA' },
+    { code:'012', name:'SOPAS E CREMES' },{ code:'013', name:'MOLHOS E CONDIMENTOS' },
+  ]},
+  { code:'002', name:'MERCEARIA DOCE', subs:[
+    { code:'001', name:'ACHOCOLATADOS CIA' },{ code:'002', name:'ALIMENTO INFANTIL' },{ code:'003', name:'AVEIA, MINGAU CIA' },
+    { code:'004', name:'BISCOITOS CIA' },{ code:'005', name:'CEREAL MATINAL' },{ code:'006', name:'BOMBONIERI' },
+    { code:'007', name:'DOCE, GOIABADA CIA' },{ code:'008', name:'CONSERVAS' },{ code:'009', name:'GELATINA CIA' },
+    { code:'010', name:'GELEIA' },{ code:'011', name:'INGREDIENTE DOCE' },{ code:'012', name:'MISTURA BOLO CIA' },
+    { code:'013', name:'SOBREMESA EM PO' },{ code:'014', name:'SUPLEMENTO NUTRICIONAL' },{ code:'015', name:'CAFE CIA' },
+    { code:'016', name:'CHA CIA' },{ code:'017', name:'MATINAIS' },{ code:'018', name:'LEITE PO' },
+  ]},
+  { code:'003', name:'BEBIDA', subs:[
+    { code:'001', name:'AGUAS' },{ code:'002', name:'APERITIVO E LICOR' },{ code:'003', name:'BEBIDA DE SOJA' },
+    { code:'004', name:'CERVEJA' },{ code:'005', name:'CHA PRONTO' },{ code:'006', name:'ISOTONICOS E ENERGETICOS' },
+    { code:'007', name:'REFRESCO EM PO' },{ code:'008', name:'REFRIGERANTE' },{ code:'009', name:'SUCO CONCENTRADO' },
+    { code:'010', name:'SUCO PRONTO' },{ code:'011', name:'VODKA CIA' },{ code:'012', name:'WHISKY' },
+    { code:'013', name:'CACHACA' },{ code:'014', name:'DIVERSOS' },{ code:'015', name:'LICORES' },
+    { code:'016', name:'VINHO' },{ code:'017', name:'ESPUMANTE' },{ code:'018', name:'CHAMPAGNE' },{ code:'019', name:'COMBOS E FESTAS' },
+  ]},
+  { code:'004', name:'SAUDE ESTETICA', subs:[
+    { code:'001', name:'ADOCANTE' },{ code:'002', name:'BEBIDA' },{ code:'003', name:'BISCOITO' },
+    { code:'004', name:'BOMBONIERE' },{ code:'005', name:'CEREAL, GRANOLA CIA' },{ code:'006', name:'GELATINA' },
+    { code:'007', name:'GELEIA' },{ code:'008', name:'LATICINEOS' },{ code:'009', name:'MERCEARIA' },
+    { code:'010', name:'MERCEARIA DOCE' },{ code:'011', name:'REFRESCO EM PO' },{ code:'012', name:'SORVETE' },
+    { code:'013', name:'SUCO' },{ code:'014', name:'LEVEDURAS' },{ code:'015', name:'SUPLEMENTOS CIA' },
+    { code:'016', name:'FARMACIA' },
+  ]},
+  { code:'005', name:'FRIOS E LATICINEOS', subs:[] },
+  { code:'006', name:'LIMPEZA', subs:[] },
+  { code:'007', name:'HIGIENE E PERFUMARIA', subs:[] },
+  { code:'009', name:'BAZAR', subs:[] },
+  { code:'010', name:'PET SHOP', subs:[] },
+  { code:'011', name:'RESTAURANTE', subs:[] },
+  { code:'015', name:'PADARIA TERCEIRIZADA', subs:[] },
+  { code:'016', name:'CEREAIS', subs:[] },
+];
+
+let currentUser = null;
+let isAdmin = false;
+let departamentos = [];
+let activeDeptIdx = 0;
+let deepLinkHandled = false;
+
+async function initAuth(){
+  const { data:{ session } } = await sb.auth.getSession();
+  await handleSession(session);
+  sb.auth.onAuthStateChange((_event, session)=> handleSession(session));
+}
+
+async function handleSession(session){
+  currentUser = session ? session.user : null;
+  isAdmin = !!currentUser && currentUser.email !== REPOSITOR_EMAIL;
+  document.getElementById('authGate').classList.toggle('hidden', !!currentUser);
+
+  if (currentUser){
+    document.getElementById('sessionLabel').textContent = isAdmin ? `Admin: ${currentUser.email}` : 'Repositor';
+    await loadData();
+    if (!deepLinkHandled){
+      deepLinkHandled = true;
+      const params = new URLSearchParams(location.search);
+      const deptCode = params.get('dept'), subCode = params.get('sub');
+      if (deptCode && subCode) openModal(deptCode, subCode);
+    }
+  } else {
+    renderDepts(); renderMain();
+  }
+}
+
+document.getElementById('loginBtn').addEventListener('click', async ()=>{
+  const username = document.getElementById('loginUser').value.trim().toLowerCase();
+  const pass = document.getElementById('loginPass').value;
+  const errBox = document.getElementById('loginError');
+  errBox.style.display = 'none';
+
+  const email = USER_EMAIL_MAP[username];
+  if (!email){
+    errBox.textContent = 'Usuário inválido.';
+    errBox.style.display = 'block';
+    return;
+  }
+  const { error } = await sb.auth.signInWithPassword({ email, password: pass });
+  if (error){
+    errBox.textContent = 'Senha incorreta.';
+    errBox.style.display = 'block';
+  }
+});
+
+document.getElementById('logoutBtn').addEventListener('click', ()=> sb.auth.signOut());
+
+/* ---------- Dados (Postgres via Supabase) ---------- */
+async function loadData(){
+  const { data: depts, error: e1 } = await sb.from('departamentos').select('*').order('ord');
+  const { data: subs, error: e2 } = await sb.from('submercadologicos').select('*').order('code');
+  if (e1 || e2){ console.error(e1, e2); return; }
+  departamentos = (depts || []).map(d => ({
+    code: d.code, name: d.name, ord: d.ord,
+    subs: (subs || []).filter(s => s.dept_code === d.code).map(s => ({ code: s.code, name: s.name, image_url: s.image_url || '' })),
+  }));
+  renderDepts();
+  renderMain();
+}
+
+async function importSeedData(){
+  if (!isAdmin) return;
+  const { data: existing } = await sb.from('departamentos').select('code').limit(1);
+  if (existing && existing.length && !confirm('Já existem departamentos cadastrados. Importar mesmo assim?')) return;
+  for (const [i, d] of seedData.entries()){
+    await sb.from('departamentos').upsert({ code: d.code, name: d.name, ord: i });
+    for (const s of d.subs){
+      await sb.from('submercadologicos').upsert({ dept_code: d.code, code: s.code, name: s.name, image_url:'' });
+    }
+  }
+  alert('Importação concluída.');
+  await loadData();
+}
+
+/* ---------- Render ---------- */
+function renderDepts(){
+  const list = document.getElementById('deptList');
+  list.innerHTML = departamentos.map((d,i)=>`
+    <button class="dept-btn${i===activeDeptIdx?' active':''}" data-idx="${i}" type="button">
+      <span><span class="code">${d.code}</span>${d.name}</span>
+      <span class="count">${d.subs.length}</span>
+    </button>
+  `).join('');
+}
+
+function renderMain(){
+  const content = document.getElementById('content');
+  const dept = departamentos[activeDeptIdx];
+  if (!dept){
+    document.getElementById('breadcrumb').textContent = 'Mercadológico';
+    document.getElementById('deptTitle').textContent = '—';
+    document.getElementById('deptDesc').textContent = '';
+    content.innerHTML = isAdmin
+      ? '<div class="empty-state">Nenhum departamento cadastrado ainda.<br><button class="btn-outline" id="importBtn" type="button" style="margin-top:14px;">Importar dados iniciais</button></div>'
+      : '<div class="empty-state">Nenhum departamento cadastrado ainda.</div>';
+    if (isAdmin){ const b = document.getElementById('importBtn'); if (b) b.addEventListener('click', importSeedData); }
+    return;
+  }
+
+  document.getElementById('breadcrumb').textContent = `Mercadológico ${dept.code}`;
+  document.getElementById('deptTitle').textContent = dept.name;
+
+  const subs = dept.subs;
+  const addCardHtml = isAdmin ? '<button class="add-card" id="addSubBtn" type="button">+ adicionar submercadológico</button>' : '';
+
+  if (subs.length === 0){
+    document.getElementById('deptDesc').textContent = 'Nenhum submercadológico cadastrado ainda pra esse setor.';
+    content.innerHTML = isAdmin
+      ? `<div class="subs-grid">${addCardHtml}</div>`
+      : `<div class="empty-state">Nenhum submercadológico cadastrado ainda pra <b>${dept.name}</b>.</div>`;
+    if (isAdmin) wireAddSubBtn(dept);
+    return;
+  }
+
+  document.getElementById('deptDesc').textContent = `${subs.length} submercadológicos — clique num pra abrir o layout.${isAdmin ? ' Arraste uma foto sobre o card pra anexar.' : ''}`;
+  content.innerHTML = `
+    <div class="section-toolbar">
+      <span></span>
+      <button class="btn-outline" id="printAllBtn" type="button">Imprimir etiquetas do setor</button>
+    </div>
+    <div class="subs-grid">${subs.map(s=>{
+      const has = !!s.image_url;
+      return `
+        <button class="sub-card" data-sub="${s.code}" type="button">
+          ${isAdmin ? `<span class="card-remove" data-remove="${s.code}" title="Remover item">✕</span>` : ''}
+          <div class="top-row">
+            <span class="code">${dept.code}-${s.code}</span>
+            <span class="status-tag ${has?'ok':'pending'}">${has?'com layout':'sem layout'}</span>
+          </div>
+          <span class="name">${s.name}</span>
+          ${isAdmin ? `<span class="upload-hint" data-upload="${s.code}">arraste ou toque pra anexar foto</span>` : ''}
+        </button>`;
+    }).join('')}${addCardHtml}</div>`;
+
+  document.getElementById('printAllBtn').addEventListener('click', ()=>printDeptLabels(dept));
+  if (isAdmin){
+    wireAddSubBtn(dept);
+    wireCardRemove(dept);
+    wireCardUpload(dept);
+    wireCardDragDrop(dept);
+  }
+}
+
+/* ---------- CRUD de submercadológico ---------- */
+function wireAddSubBtn(dept){
+  const btn = document.getElementById('addSubBtn');
+  if (!btn) return;
+  btn.addEventListener('click', async ()=>{
+    const code = prompt('Código do novo submercadológico (ex: 020):');
+    if (!code) return;
+    const name = prompt('Nome do submercadológico (ex: BATATA FRITA):');
+    if (!name) return;
+    await sb.from('submercadologicos').upsert({ dept_code: dept.code, code: code.trim(), name: name.trim().toUpperCase(), image_url:'' });
+    await loadData();
+  });
+}
+
+function wireCardRemove(dept){
+  document.querySelectorAll('.card-remove').forEach(btn=>{
+    btn.addEventListener('click', async (e)=>{
+      e.stopPropagation();
+      const code = btn.dataset.remove;
+      if (!confirm('Remover esse submercadológico?')) return;
+      try{ await sb.storage.from('layouts').remove([`${dept.code}/${code}.jpg`]); }catch(err){}
+      await sb.from('submercadologicos').delete().eq('dept_code', dept.code).eq('code', code);
+      await loadData();
+    });
+  });
+}
+
+function wireCardUpload(dept){
+  document.querySelectorAll('[data-upload]').forEach(hint=>{
+    hint.addEventListener('click', (e)=>{ e.stopPropagation(); openFilePicker(dept.code, hint.dataset.upload); });
+  });
+}
+
+function wireCardDragDrop(dept){
+  document.querySelectorAll('.sub-card').forEach(card=>{
+    const subCode = card.dataset.sub;
+    card.addEventListener('dragover', (e)=>{ e.preventDefault(); card.classList.add('drag-over'); });
+    card.addEventListener('dragleave', ()=> card.classList.remove('drag-over'));
+    card.addEventListener('drop', async (e)=>{
+      e.preventDefault(); e.stopPropagation();
+      card.classList.remove('drag-over');
+      const file = e.dataTransfer.files && e.dataTransfer.files[0];
+      if (file) await uploadImageForSub(dept.code, subCode, file);
+    });
+  });
+}
+
+const fileInput = document.getElementById('fileInput');
+function openFilePicker(deptCode, subCode){
+  fileInput.dataset.dept = deptCode;
+  fileInput.dataset.sub = subCode;
+  fileInput.value = '';
+  fileInput.click();
+}
+fileInput.addEventListener('change', async ()=>{
+  const file = fileInput.files[0];
+  if (!file) return;
+  await uploadImageForSub(fileInput.dataset.dept, fileInput.dataset.sub, file);
+  if (document.getElementById('modalOverlay').classList.contains('open')){
+    openModal(fileInput.dataset.dept, fileInput.dataset.sub);
+  }
+});
+
+function resizeImageToBlob(file, maxW, quality){
+  maxW = maxW || 1000; quality = quality || 0.75;
+  return new Promise((resolve, reject)=>{
+    const reader = new FileReader();
+    reader.onload = (e)=>{
+      const img = new Image();
+      img.onload = ()=>{
+        const scale = Math.min(1, maxW / img.width);
+        const w = Math.round(img.width * scale), h = Math.round(img.height * scale);
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        canvas.toBlob(blob => resolve(blob), 'image/jpeg', quality);
+      };
+      img.onerror = reject;
+      img.src = e.target.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+async function uploadImageForSub(deptCode, subCode, file){
+  if (!currentUser){ alert('Faça login como admin primeiro.'); return; }
+  if (!file.type.startsWith('image/')){ alert('Solte uma imagem (jpg, png).'); return; }
+  const blob = await resizeImageToBlob(file);
+  const path = `${deptCode}/${subCode}.jpg`;
+  const { error: upErr } = await sb.storage.from('layouts').upload(path, blob, { contentType:'image/jpeg', upsert:true });
+  if (upErr){ alert('Erro ao subir a imagem: ' + upErr.message); return; }
+  const { data } = sb.storage.from('layouts').getPublicUrl(path);
+  await sb.from('submercadologicos').update({ image_url: data.publicUrl }).eq('dept_code', deptCode).eq('code', subCode);
+  await loadData();
+}
+
+/* ---------- QR code + modal ---------- */
+function buildItemUrl(deptCode, subCode){
+  return `${location.origin + location.pathname}?dept=${deptCode}&sub=${subCode}`;
+}
+function getQrDataUrl(container){
+  const img = container.querySelector('img');
+  const canvas = container.querySelector('canvas');
+  if (img && img.src) return img.src;
+  if (canvas) return canvas.toDataURL('image/png');
+  return '';
+}
+
+async function openModal(deptCode, subCode){
+  const dept = departamentos.find(d => d.code === deptCode);
+  const sub = dept && dept.subs.find(s => s.code === subCode);
+  if (!dept || !sub) return;
+  const url = buildItemUrl(dept.code, sub.code);
+
+  document.getElementById('modalBread').textContent = `${dept.code} — ${dept.name}`;
+  document.getElementById('modalTitle').textContent = `${dept.code}-${sub.code} · ${sub.name}`;
+  const body = document.getElementById('modalBody');
+
+  let imgHtml;
+  if (sub.image_url){
+    imgHtml = `<img class="modal-img" id="modalImg" src="${sub.image_url}" alt="Layout de ${sub.name}">`;
+  } else {
+    imgHtml = `<div class="modal-empty" id="modalImg">Nenhuma foto de layout cadastrada ainda pra este submercadológico.${isAdmin ? ' Arraste uma foto aqui ou toque em "Anexar foto".' : ''}</div>`;
+  }
+  const adminRow = isAdmin ? `
+    <div class="modal-upload-row">
+      <button id="modalUpload" type="button">${sub.image_url ? 'Trocar foto' : 'Anexar foto'}</button>
+      ${sub.image_url ? '<button class="danger" id="modalRemoveImg" type="button">Remover foto</button>' : ''}
+    </div>` : '';
+
+  body.innerHTML = `
+    ${imgHtml}
+    ${adminRow}
+    <div class="qr-section">
+      <div class="qr-code" id="qrCode"></div>
+      <div class="qr-info">
+        <div class="qr-label">Cole esse QR na gôndola — ao escanear, todo mundo vê a mesma foto</div>
+        <div class="qr-link mono" id="qrLink">${url}</div>
+        <div class="qr-buttons">
+          <button id="qrDownload" type="button">Baixar QR</button>
+          <button class="secondary" id="qrPrint" type="button">Imprimir etiqueta</button>
+        </div>
+      </div>
+    </div>`;
+
+  const qrEl = document.getElementById('qrCode');
+  qrEl.innerHTML = '';
+  new QRCode(qrEl, { text: url, width: 108, height: 108, correctLevel: QRCode.CorrectLevel.M });
+
+  document.getElementById('qrDownload').addEventListener('click', ()=>{
+    const src = getQrDataUrl(qrEl);
+    if (!src) return;
+    const a = document.createElement('a');
+    a.href = src; a.download = `qr-${dept.code}-${sub.code}.png`; a.click();
+  });
+  document.getElementById('qrPrint').addEventListener('click', ()=>{
+    printLabels([{ code:`${dept.code}-${sub.code}`, name: sub.name, dataUrl: getQrDataUrl(qrEl) }]);
+  });
+
+  if (isAdmin){
+    document.getElementById('modalUpload').addEventListener('click', ()=> openFilePicker(dept.code, sub.code));
+    const rm = document.getElementById('modalRemoveImg');
+    if (rm) rm.addEventListener('click', async ()=>{
+      if (!confirm('Remover a foto desse layout?')) return;
+      try{ await sb.storage.from('layouts').remove([`${dept.code}/${sub.code}.jpg`]); }catch(err){}
+      await sb.from('submercadologicos').update({ image_url:'' }).eq('dept_code', dept.code).eq('code', sub.code);
+      await loadData();
+      openModal(dept.code, sub.code);
+    });
+    const dropArea = document.getElementById('modalImg');
+    ['dragover','drop'].forEach(evt=> dropArea.addEventListener(evt, e=>e.preventDefault()));
+    dropArea.addEventListener('drop', async (e)=>{
+      const file = e.dataTransfer.files && e.dataTransfer.files[0];
+      if (file){ await uploadImageForSub(dept.code, sub.code, file); openModal(dept.code, sub.code); }
+    });
+  }
+
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function closeModal(){ document.getElementById('modalOverlay').classList.remove('open'); }
+
+function printLabels(labels){
+  const win = window.open('', '_blank', 'width=480,height=640');
+  win.document.write(`
+    <html><head><title>Etiquetas — Planograma</title>
+    <style>
+      body{ font-family: Arial, sans-serif; margin:20px; }
+      .grid{ display:grid; grid-template-columns: repeat(3, 1fr); gap:14px; }
+      .label{ border:1px dashed #999; border-radius:8px; padding:10px; text-align:center; }
+      .label img{ width:100px; height:100px; }
+      .label .code{ font-family: monospace; font-size:10.5px; color:#666; margin-top:6px; }
+      .label .name{ font-size:11.5px; font-weight:600; margin-top:2px; }
+      .bar{ margin-bottom:16px; }
+      @media print{ .bar{ display:none; } }
+    </style>
+    </head><body>
+    <div class="bar"><button onclick="window.print()">Imprimir</button></div>
+    <div class="grid">${labels.map(l=>`<div class="label"><img src="${l.dataUrl}"><div class="code">${l.code}</div><div class="name">${l.name}</div></div>`).join('')}</div>
+    </body></html>
+  `);
+  win.document.close();
+}
+
+async function printDeptLabels(dept){
+  const labels = [];
+  for (const s of dept.subs){
+    const temp = document.createElement('div');
+    temp.style.position = 'absolute'; temp.style.left = '-9999px';
+    document.body.appendChild(temp);
+    new QRCode(temp, { text: buildItemUrl(dept.code, s.code), width: 140, height: 140, correctLevel: QRCode.CorrectLevel.M });
+    await new Promise(r => setTimeout(r, 30));
+    labels.push({ code:`${dept.code}-${s.code}`, name: s.name, dataUrl: getQrDataUrl(temp) });
+    document.body.removeChild(temp);
+  }
+  printLabels(labels);
+}
+
+/* ---------- Eventos globais ---------- */
+document.getElementById('deptList').addEventListener('click', (e)=>{
+  const btn = e.target.closest('.dept-btn');
+  if (!btn) return;
+  activeDeptIdx = Number(btn.dataset.idx);
+  renderDepts(); renderMain();
+  document.getElementById('sidebar').classList.remove('open');
+});
+
+document.getElementById('content').addEventListener('click', (e)=>{
+  const card = e.target.closest('.sub-card');
+  if (!card) return;
+  const dept = departamentos[activeDeptIdx];
+  openModal(dept.code, card.dataset.sub);
+});
+
+document.getElementById('modalClose').addEventListener('click', closeModal);
+document.getElementById('modalOverlay').addEventListener('click', (e)=>{ if (e.target.id === 'modalOverlay') closeModal(); });
+document.addEventListener('keydown', (e)=>{ if (e.key === 'Escape') closeModal(); });
+document.getElementById('menuToggle').addEventListener('click', ()=> document.getElementById('sidebar').classList.toggle('open'));
+
+initAuth();
+</script>
+</body>
+</html>
