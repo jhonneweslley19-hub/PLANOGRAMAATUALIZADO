@@ -131,17 +131,30 @@ leitura pública (o app depende de URLs públicas para os QR codes).
   nenhuma ação associada (histórico de versões é uma constante fixa no
   código, não um dado que faça sentido "limpar").
 
-## Segurança — pendente (depende de onde o site for hospedado)
+## Cabeçalhos de segurança HTTP (Referrer-Policy, X-Frame-Options, X-Content-Type-Options, HSTS…)
 
-Alguns cabeçalhos de segurança não podem ser definidos pela tag `<meta>` de
-CSP (ex.: `frame-ancestors`, que protege contra clickjacking, e
-`X-Frame-Options`/`Strict-Transport-Security`) — eles só funcionam como
-cabeçalho HTTP de verdade, configurado no servidor/hospedagem estática.
-Exemplos:
+Scanners como o Mozilla Observatory / securityheaders.com checam o
+**cabeçalho HTTP** de verdade — a tag `<meta http-equiv="Content-Security-Policy">`
+do `index.html` não conta pra a maioria deles, e diretivas como
+`frame-ancestors` são silenciosamente ignoradas quando vêm de `<meta>` (só
+funcionam como cabeçalho HTTP). `X-Frame-Options`, `X-Content-Type-Options` e
+`Strict-Transport-Security` não têm nenhum equivalente em `<meta>` — só
+existem como cabeçalho HTTP.
 
-- **Netlify**: arquivo `_headers` na raiz.
-- **Vercel**: seção `headers` em `vercel.json`.
-- **Nginx**: `add_header X-Frame-Options "DENY";` etc. no `server {}`.
+Este repositório já inclui os dois formatos mais comuns de hospedagem
+estática, prontos pra funcionar sem configuração extra:
+
+- **Netlify** → detecta `_headers` na raiz automaticamente.
+- **Vercel** → detecta `vercel.json` (seção `headers`) na raiz automaticamente.
+- **Nginx/Apache própios** → replique as mesmas diretivas com
+  `add_header X-Frame-Options "DENY";` etc. no `server {}`.
+- **GitHub Pages** → **não suporta cabeçalhos HTTP customizados em hipótese
+  nenhuma** (nem com `_headers`, nem com nenhum arquivo de config — é uma
+  limitação da plataforma, não deste repositório). Se o site estiver
+  publicado ali, os itens de CSP/X-Frame-Options/X-Content-Type-Options/HSTS
+  de um scanner externo **vão continuar aparecendo como reprovados** até o
+  site migrar para Netlify/Vercel/Cloudflare Pages ou passar por um proxy
+  (ex.: Cloudflare na frente, com uma Transform Rule injetando os cabeçalhos).
 
 ## Segurança — pendente (requer acesso ao painel do Supabase)
 

@@ -21,6 +21,13 @@
   form-action 'self';
   object-src 'none';
 ">
+<!--
+  Referrer-Policy também pode ser setado por <meta>, ao contrário de
+  X-Frame-Options/X-Content-Type-Options/HSTS, que só existem como cabeçalho
+  HTTP de verdade — veja os arquivos _headers (Netlify) e vercel.json
+  (Vercel) na raiz do repositório.
+-->
+<meta name="referrer" content="strict-origin-when-cross-origin">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
