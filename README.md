@@ -36,9 +36,33 @@ Com este sistema, basta escanear o QR Code da gôndola para visualizar imediatam
 │   └── styles.css    # todo o CSS da aplicação
 ├── js/
 │   ├── config.js     # URL e anon key do projeto Supabase
-│   └── app.js        # lógica da aplicação (auth, render, CRUD, QR code)
+│   ├── app.js        # lógica da aplicação (auth, render, CRUD, QR code)
+│   └── vendor/       # bibliotecas de terceiros hospedadas localmente
+│       ├── qrcode.min.js
+│       └── supabase.js
+├── _headers          # cabeçalhos de segurança HTTP (Netlify)
+├── vercel.json        # cabeçalhos de segurança HTTP (Vercel)
 └── README.md
 ```
+
+## Bibliotecas vendorizadas (`js/vendor/`)
+
+QRCode.js e supabase-js **não são mais carregados de CDN** — os arquivos
+ficam versionados neste repositório. Isso elimina de vez os alertas de scan
+"Cross-Domain JavaScript Source File Inclusion" e "Subresource Integrity
+Attribute Missing" pra esses dois scripts (deixaram de ser recursos de
+outro domínio, então SRI nem se aplica mais a eles) e também tira uma
+dependência de disponibilidade de CDN externo em produção.
+
+- `js/vendor/qrcode.min.js` — QRCode.js 1.0.0
+- `js/vendor/supabase.js` — supabase-js **2.112.2** (o próprio arquivo
+  registra a versão exata no comentário do topo)
+
+**Como atualizar uma dessas bibliotecas no futuro:** baixe a versão nova
+(ex. `https://cdn.jsdelivr.net/npm/@supabase/supabase-js@X.Y.Z`), substitua
+o arquivo correspondente em `js/vendor/` e teste o app antes de publicar —
+como não há mais atualização automática via CDN, uma versão com
+vulnerabilidade corrigida do lado deles só chega aqui manualmente.
 
 ## Como rodar localmente
 
@@ -171,16 +195,19 @@ problema real:
   `supabase-js` (bibliotecas de terceiros, fora do nosso controle) ou de um
   cabeçalho HTTP da própria hospedagem. Me manda a URL/trecho que o
   scanner apontou que eu confirmo.
-- **Cross-Domain JavaScript Source File Inclusion (2)** e **Sub Resource
-  Integrity Attribute Missing (3)**: são os mesmos 2 `<script src>` de CDN
-  (`qrcode.min.js`, `supabase-js`) + o `<link rel="stylesheet">` do Google
-  Fonts. Eu não consigo baixar esses arquivos pra calcular o hash SRI
-  porque a rede desta sessão bloqueia `cdnjs.cloudflare.com` e
-  `cdn.jsdelivr.net` (política do ambiente, não vou insistir nisso). Duas
-  saídas: (a) você roda o comando abaixo localmente e me manda os 3 hashes,
-  ou (b) você baixa os 2 arquivos JS e me envia — eu hospedo localmente em
-  `js/vendor/` e removo a dependência de CDN por completo (resolve os dois
-  alertas de uma vez).
+- ~~**Cross-Domain JavaScript Source File Inclusion (2)**~~ — **resolvido**:
+  `qrcode.min.js` e `supabase-js` agora são servidos localmente em
+  `js/vendor/` (ver seção "Bibliotecas vendorizadas" acima), deixaram de
+  ser scripts de outro domínio.
+- **Sub Resource Integrity Attribute Missing (3)**: 2 dos 3 casos foram
+  resolvidos junto com o item acima (deixaram de ser recurso externo, então
+  SRI nem se aplica mais). O terceiro é o `<link rel="stylesheet">` do
+  Google Fonts, que continua pendente — o CSS do Google muda conforme o
+  navegador de quem acessa (fontes em formatos diferentes), então um hash
+  fixo quebraria em vários navegadores. A correção real aqui é hospedar as
+  fontes localmente também (baixando os `.woff2` via
+  [google-webfonts-helper](https://gwfh.mranftl.com/fonts)) — quer que eu
+  faça isso também?
 - **Information Disclosure - Information in Browser localStorage**: é o
   mesmo problema já documentado acima em "Segurança — pendente (requer
   acesso ao painel do Supabase)" — a lista de usuários/papéis fica no
@@ -217,13 +244,6 @@ estática, prontos pra funcionar sem configuração extra:
 ## Segurança — pendente (requer acesso ao painel do Supabase)
 
 - Aplicar as políticas de RLS acima (o item mais importante).
-- Travar a versão exata dos scripts de CDN (`qrcode.min.js`,
-  `supabase-js`) e adicionar `integrity="sha384-..."` (Subresource
-  Integrity). Para gerar o hash de um arquivo:
-  ```bash
-  curl -s <url-do-script> | openssl dgst -sha384 -binary | openssl base64 -A
-  ```
-  e usar o resultado como `integrity="sha384-RESULTADO"` na tag `<script>`.
 - Trocar os `prompt()`/`confirm()` nativos do fluxo "Cadastrar usuário" por
   um formulário próprio, com validação de força de senha.
 
