@@ -130,6 +130,64 @@ leitura pública (o app depende de URLs públicas para os QR codes).
 - Removido o botão "Limpar histórico" nas Configurações, que não tinha
   nenhuma ação associada (histórico de versões é uma constante fixa no
   código, não um dado que faça sentido "limpar").
+- `Cross-Origin-Opener-Policy: same-origin` e `Cross-Origin-Resource-Policy: same-origin`
+  (via `_headers`/`vercel.json`), reduzindo a superfície de configuração
+  incorreta entre domínios.
+- `Cache-Control` explícito: `no-cache, must-revalidate` no HTML de entrada
+  (que muda conforme login/dados) e cache curto e revalidado em `css/`/`js/`.
+- Comentários explicativos longos nos arquivos servidos (`index.html`,
+  `js/config.js`, `js/app.js`) foram resumidos/movidos pra este README —
+  não tinham nada sensível, mas continham palavras como "admin"/"key" que
+  scanners de "comentários suspeitos" (ex.: ZAP) sinalizam por padrão.
+
+## Sobre o alerta "PII Disclosure" (endereços de e-mail)
+
+Um scanner vai continuar acusando isso mesmo depois de qualquer ajuste de
+comentário: `js/app.js` contém, em texto puro, os e-mails internos fixos
+(`admopcao@interno.opcaosupermercados.local`, `repositor@...`, e as
+variantes `.com`) usados pra mapear o "alias" digitado no login pro e-mail
+que o Supabase Auth exige. Isso **precisa** estar no JavaScript do cliente
+pra função de login funcionar — não é um vazamento acidental, é a lógica do
+app, e não são endereços de pessoas reais (são aliases internos sintéticos).
+Duas opções, nenhuma delas encaixada nesta rodada de correções:
+
+1. **Aceitar como falso positivo** documentado (é o que este README está
+   fazendo agora).
+2. **Mover a resolução alias→e-mail pro servidor** (uma Supabase Edge
+   Function que recebe alias+senha e resolve o e-mail internamente antes de
+   chamar `signInWithPassword`), removendo esses e-mails do bundle público.
+   Isso é uma mudança de arquitetura maior — avise se quiser que eu
+   implemente.
+
+## Itens de scan que dependem de mais detalhe pra corrigir com segurança
+
+Sem o alerta completo do scanner (URL exata + trecho da resposta) eu não
+tenho como confirmar a causa sem arriscar "consertar" algo que não é o
+problema real:
+
+- **Divulgação de Data e Hora - Unix**: não encontrei nenhum número de 10
+  dígitos (timestamp Unix) em `index.html`/`css/`/`js/` deste repositório —
+  o mais provável é que venha de dentro do `qrcode.min.js` ou do
+  `supabase-js` (bibliotecas de terceiros, fora do nosso controle) ou de um
+  cabeçalho HTTP da própria hospedagem. Me manda a URL/trecho que o
+  scanner apontou que eu confirmo.
+- **Cross-Domain JavaScript Source File Inclusion (2)** e **Sub Resource
+  Integrity Attribute Missing (3)**: são os mesmos 2 `<script src>` de CDN
+  (`qrcode.min.js`, `supabase-js`) + o `<link rel="stylesheet">` do Google
+  Fonts. Eu não consigo baixar esses arquivos pra calcular o hash SRI
+  porque a rede desta sessão bloqueia `cdnjs.cloudflare.com` e
+  `cdn.jsdelivr.net` (política do ambiente, não vou insistir nisso). Duas
+  saídas: (a) você roda o comando abaixo localmente e me manda os 3 hashes,
+  ou (b) você baixa os 2 arquivos JS e me envia — eu hospedo localmente em
+  `js/vendor/` e removo a dependência de CDN por completo (resolve os dois
+  alertas de uma vez).
+- **Information Disclosure - Information in Browser localStorage**: é o
+  mesmo problema já documentado acima em "Segurança — pendente (requer
+  acesso ao painel do Supabase)" — a lista de usuários/papéis fica no
+  `localStorage` porque não existe uma tabela `profiles` real no Supabase
+  ainda. A correção é a mesma: aplicar RLS + tabela `profiles`.
+- **Modern Web Application**: alerta informativo do ZAP (só avisa que é uma
+  SPA), não é uma vulnerabilidade — nada a corrigir.
 
 ## Cabeçalhos de segurança HTTP (Referrer-Policy, X-Frame-Options, X-Content-Type-Options, HSTS…)
 

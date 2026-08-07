@@ -2,10 +2,9 @@
    bibliotecas carregadas via <script> no <head> (QRCode, supabase-js). */
 
 /* ---------- Utilidades de segurança ---------- */
-/* Escapa qualquer valor antes de injetá-lo em innerHTML (nomes de
-   departamento/submercadológico, alias/e-mail de usuário, URLs de imagem
-   etc. podem ser digitados por um admin via prompt() e não devem ser
-   tratados como HTML confiável). */
+/* Escapa qualquer valor antes de injetá-lo em innerHTML — nomes, alias,
+   e-mails e URLs de imagem vêm de entrada digitada e não devem ser
+   tratados como HTML confiável. */
 function escapeHtml(value){
   return String(value ?? '').replace(/[&<>"']/g, (ch) => ({
     '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',

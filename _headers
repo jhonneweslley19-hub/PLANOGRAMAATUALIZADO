@@ -10,4 +10,21 @@
   Referrer-Policy: strict-origin-when-cross-origin
   Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
   Cross-Origin-Resource-Policy: same-origin
+  Cross-Origin-Opener-Policy: same-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=()
+
+# O HTML de entrada é renderizado no cliente e muda conforme login/dados do
+# Supabase — não deixamos o navegador/CDN cachear uma versão desatualizada.
+/
+  Cache-Control: no-cache, must-revalidate
+
+/index.html
+  Cache-Control: no-cache, must-revalidate
+
+# CSS/JS têm nome de arquivo fixo (sem hash de versão), então usamos um
+# cache curto e sempre revalidado em vez de cache longo "imutável".
+/css/*
+  Cache-Control: public, max-age=3600, must-revalidate
+
+/js/*
+  Cache-Control: public, max-age=3600, must-revalidate
