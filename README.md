@@ -91,7 +91,57 @@ const SUPABASE_ANON_KEY = 'sua-anon-key';
 A anon key **é destinada a ser pública** em aplicações client-side — sozinha ela
 não concede acesso a nada. Toda a proteção real dos dados vem das políticas de
 **Row Level Security (RLS)** configuradas no Postgres e no bucket de Storage
-(veja a seção seguinte). Por isso ela pode continuar versionada no repositório.
+(veja a seção seguinte). No entanto, se você preferir reduzir falsos positivos em
+scanners ou evitar expor chaves em commits, siga o fluxo abaixo:
+
+- Não versione `js/config.js` com chaves reais. Em vez disso mantenha um arquivo
+  de template `js/config.example.js` (incluso neste repositório) e copie-o para
+  `js/config.js` no momento do deploy ou localmente.
+- Em hosts como Vercel/Netlify, defina a `SUPABASE_ANON_KEY` como variável de
+  ambiente e gere `js/config.js` no passo de build usando essa variável.
+
+Exemplo (local / CI genérico):
+
+```bash
+# copiar o template para o arquivo consumido pelo app
+cp js/config.example.js js/config.js
+# (opcional) substituir o placeholder pelo valor da variável de ambiente
+sed -i "s/sua-anon-key/${SUPABASE_ANON_KEY}/" js/config.js
+```
+
+Scripts úteis incluídos:
+
+- `scripts/generate-config.sh` — gera `js/config.js` a partir do template usando a variável de ambiente `SUPABASE_ANON_KEY` (bash).
+- `scripts/generate-config.ps1` — equivalente para PowerShell (Windows).
+
+CI de segurança:
+
+- Este repositório inclui uma GitHub Action (`.github/workflows/config-secret-check.yml`) que executa um scan rápido em pushes/PRs para detectar padrões de chaves sensíveis e falhar o run se encontrar correspondências.
+
+Integração no GitHub (deploy):
+
+- Para gerar `js/config.js` automaticamente no CI e usar a `SUPABASE_ANON_KEY` sem versioná-la, adicione o segredo `SUPABASE_ANON_KEY` nas `Settings → Secrets` do seu repositório GitHub.
+- O workflow incluído possui um job `generate-config` que usa esse segredo para criar `js/config.js` e publica o arquivo como artifact (`config-js`) para que etapas subsequentes (build/deploy) façam o download e incluam no pacote final.
+
+Exemplo de como um job de deploy pode recuperar o arquivo antes do build:
+
+```yaml
+steps:
+  - uses: actions/checkout@v4
+  - name: Download generated config
+    uses: actions/download-artifact@v4
+    with:
+      name: config-js
+  - name: Build/Deploy (exemplo)
+    run: |
+      # agora js/config.js está disponível no workspace
+      echo "Rodar build ou deploy..."
+```
+
+
+
+Se preferir manter a anon key diretamente no bundle, documente isso e acompanhe
+as recomendações de RLS no README (requerido para segurança de escrita/leitura).
 
 ### Tabelas esperadas
 
