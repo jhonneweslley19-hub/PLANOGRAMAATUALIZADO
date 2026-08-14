@@ -300,3 +300,7 @@ estática, prontos pra funcionar sem configuração extra:
 ---
 
 Este projeto demonstra como uma solução simples, aliada à tecnologia, pode melhorar significativamente os processos internos, reduzir retrabalho e aumentar a eficiência operacional no varejo.
+
+
+
+jhonne
