@@ -191,7 +191,7 @@ button{ font-family:inherit; }
 .auth-brand-desc{ font-size:13px; line-height:1.7; color:#BDC8E0; margin: 0; max-width: 320px; }
 .auth-form-panel{ padding: 42px 36px; display:flex; flex-direction:column; gap:18px; background: rgba(255,255,255,0.98); }
 .auth-form-header{ display:flex; flex-direction:column; gap:6px; }
-.auth-form-panel label{ font-size:13px; color: var(--text); display:block; margin-bottom:8px; font-weight:700; }
+.auth-form-panel label{ font-size:13px; color:#111827; display:block; margin-bottom:8px; font-weight:700; }
 .auth-form-panel .panel-title{ margin:0; font-size:20px; color:#111827; }
 .auth-form-panel .panel-sub{ margin:6px 0 0; color:#6B7280; font-size:13px; line-height:1.65; }
 .auth-field{ position:relative; display:flex; flex-direction:column; gap:10px; }
