@@ -1,0 +1,14 @@
+# Sistema operacional / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Node (caso ferramentas de build/lint sejam adicionadas no futuro)
+node_modules/
+npm-debug.log*
+yarn-error.log*
+
+# Configuração local não versionada
+.env
+.env.local
